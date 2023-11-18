@@ -12,4 +12,8 @@ public:
 
     void paintEvent(QPaintEvent*) override;
     bool event(QEvent *event) override;
+
+private:
+    QString m_targetProcess;
+    bool m_wasDown = false;
 };
