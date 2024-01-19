@@ -11,6 +11,7 @@ static QByteArray PREFIX_PICK = "[UnityCrossThreadLogger]==> BotDraft_DraftPick 
 LogParser::LogParser(const QString &directory, QObject *parent)
     : QObject(parent)
     , m_watcher(new QFileSystemWatcher({directory}))
+    , m_directory(directory)
 {
     connect(
         m_watcher.data(),
@@ -18,8 +19,11 @@ LogParser::LogParser(const QString &directory, QObject *parent)
         this,
         &LogParser::onFileChanged
     );
+}
 
-    onFileChanged(directory + QDir::separator() + "player.log");
+void LogParser::startParsing()
+{
+    onFileChanged(m_directory + QDir::separator() + "player.log");
 }
 
 void LogParser::parseJson(const QByteArray &json)

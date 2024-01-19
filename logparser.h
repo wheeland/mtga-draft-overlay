@@ -10,6 +10,7 @@ class LogParser : public QObject
 
 public:
     LogParser(const QString &directory, QObject *parent = nullptr);
+    void startParsing();
 
 signals:
     void draftPack(int pack, int pick, QVector<int> cards);
@@ -22,5 +23,6 @@ private:
     void parseJson(const QByteArray &json);
 
     QScopedPointer<QFileSystemWatcher> m_watcher;
+    QString m_directory;
     int m_lastLineCount = 0;
 };
