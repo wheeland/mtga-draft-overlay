@@ -9,19 +9,19 @@ SOURCES += \
     cardstatistics.cpp \
     draftmodel.cpp \
     filter.cpp \
+    inputtracker.cpp \
     logparser.cpp \
     main.cpp \
-    mainwindow.cpp \
-    mousetracker.cpp
+    mainwindow.cpp
 
 HEADERS += \
     cardlayout.h \
     cardstatistics.h \
     draftmodel.h \
     filter.h \
+    inputtracker.h \
     logparser.h \
-    mainwindow.h \
-    mousetracker.h
+    mainwindow.h
 
 RESOURCES += \
     ui.qrc

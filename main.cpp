@@ -2,7 +2,7 @@
 #include "cardstatistics.h"
 #include "draftmodel.h"
 #include "logparser.h"
-#include "mousetracker.h"
+#include "inputtracker.h"
 
 #include <QApplication>
 #include <QQmlContext>
@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     app.setOrganizationName("de.wheeland");
 
     CardLayout layout;
-    MouseTracker tracker;
+    InputTracker tracker;
     LogParser logParser("C:\\Users\\hagen\\AppData\\LocalLow\\Wizards Of The Coast\\MTGA");
 
     CardStatisticsDatabase cardDB;
@@ -35,9 +35,11 @@ int main(int argc, char *argv[])
     surfaceFormat.setAlphaBufferSize(8);
 
     QQuickView view;
-    view.rootContext()->setContextProperty("_layout", &layout);
-    view.rootContext()->setContextProperty("_draftModel", &model);
     view.rootContext()->setContextProperty("_app", &app);
+    view.rootContext()->setContextProperty("_cardDB", &cardDB);
+    view.rootContext()->setContextProperty("_draftModel", &model);
+    view.rootContext()->setContextProperty("_inputTracker", &tracker);
+    view.rootContext()->setContextProperty("_layout", &layout);
     view.setSource((QUrl("qrc:/ui/root.qml")));
 
     view.setFormat(surfaceFormat);
