@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
     QQuickView view;
     view.rootContext()->setContextProperty("_layout", &layout);
     view.rootContext()->setContextProperty("_draftModel", &model);
+    view.rootContext()->setContextProperty("_app", &app);
     view.setSource((QUrl("qrc:/ui/root.qml")));
 
     view.setFormat(surfaceFormat);

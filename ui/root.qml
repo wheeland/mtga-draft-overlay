@@ -4,17 +4,22 @@ Item {
     anchors.fill: parent
 
     Rectangle {
-        id: clicker
-        color: "red"
+        color: "darkred"
         x: 0
         y: 0
-        width: 20
+        width: 30
         height: 20
 
         Text {
             anchors.centerIn: parent
-            text: "x"
-            color: "black"
+            text: "EXIT"
+            color: "white"
+            font.pixelSize: 12.0
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: _app.quit()
         }
     }
 
