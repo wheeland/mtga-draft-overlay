@@ -10,7 +10,7 @@
 
 static bool isPressed(int button)
 {
-    return GetAsyncKeyState(button) & 0x1;
+    return GetAsyncKeyState(button) & ~0x1;
 }
 
 MouseTracker::MouseTracker(QObject *parent)
@@ -45,18 +45,21 @@ void MouseTracker::onTimeout()
             ));
         }
         if (left != m_left) {
+            QEvent::Type type = left ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
             QApplication::postEvent(window, new QMouseEvent(
-                QEvent::MouseButtonPress, pos, pos, Qt::LeftButton, buttons, Qt::NoModifier
+                type, pos, pos, Qt::LeftButton, buttons, Qt::NoModifier
             ));
         }
         if (middle != m_middle) {
+            QEvent::Type type = middle ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
             QApplication::postEvent(window, new QMouseEvent(
-                QEvent::MouseButtonPress, pos, pos, Qt::MiddleButton, buttons, Qt::NoModifier
+                type, pos, pos, Qt::MiddleButton, buttons, Qt::NoModifier
             ));
         }
         if (right != m_right) {
+            QEvent::Type type = right ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
             QApplication::postEvent(window, new QMouseEvent(
-                QEvent::MouseButtonPress, pos, pos, Qt::RightButton, buttons, Qt::NoModifier
+                type, pos, pos, Qt::RightButton, buttons, Qt::NoModifier
             ));
         }
     }

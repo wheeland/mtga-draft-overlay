@@ -23,6 +23,7 @@ LogParser::LogParser(const QString &directory, QObject *parent)
 
 void LogParser::startParsing()
 {
+    onFileChanged(m_directory + QDir::separator() + "Player-prev.log");
     onFileChanged(m_directory + QDir::separator() + "player.log");
 }
 
@@ -68,11 +69,17 @@ void LogParser::parseJson(const QByteArray &json)
 
 void LogParser::onFileChanged(const QString &path)
 {
-    QFile file(path);
+    if (!path.endsWith("player.log"))
+        return;
 
+    QFile file(path);
     if (file.open(QFile::ReadOnly)) {
         const QByteArray data = file.readAll();
         const QVector<QByteArray> lines = data.split('\n');
+
+        // new file?
+        if (m_lastLineCount > lines.size())
+            m_lastLineCount = 0;
 
         for (int i = m_lastLineCount; i < lines.size(); ++i) {
             if (lines[i].startsWith("{")) {
@@ -82,5 +89,6 @@ void LogParser::onFileChanged(const QString &path)
                 parseJson(lines[i].mid(PREFIX_PICK.size()));
             }
         }
+        m_lastLineCount = lines.size();
     }
 }
