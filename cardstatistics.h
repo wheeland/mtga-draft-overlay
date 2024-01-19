@@ -26,12 +26,16 @@ public:
 signals:
     void dataChanged();
 
+public slots:
+    void clearCache();
+
 private slots:
     void onRequestFinished(QNetworkReply *reply);
 
 private:
     void saveSetData(const QByteArray &set, const QByteArray &data) const;
     bool loadSetData(const QByteArray &set);
+    void startDownload(const QByteArray &set);
     bool addCardData(const QByteArray &json);
 
     QScopedPointer<QNetworkAccessManager> m_network;

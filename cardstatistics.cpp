@@ -66,16 +66,28 @@ void CardStatisticsDatabase::addSet(const QByteArray &setName)
     if (m_sets.contains(setName))
         return;
 
+    m_sets << setName;
+
     if (loadSetData(setName))
         return;
 
+    startDownload(setName);
+}
+
+void CardStatisticsDatabase::startDownload(const QByteArray &set)
+{
     QByteArray url = "https://www.17lands.com/card_ratings/data?expansion={SET}&format={FMT}";
-    url.replace("{SET}", setName);
+    url.replace("{SET}", set);
     url.replace("{FMT}", DRAFT_TYPES[1]);
 
     QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(url)));
-    m_currentRequests[reply] = setName;
-    m_sets << setName;
+    m_currentRequests[reply] = set;
+}
+
+void CardStatisticsDatabase::clearCache()
+{
+    for (QByteArray set : m_sets)
+        startDownload(set);
 }
 
 void CardStatisticsDatabase::onRequestFinished(QNetworkReply *reply)
@@ -98,7 +110,7 @@ bool CardStatisticsDatabase::addCardData(const QByteArray &json)
         const float winRate = cardObj["win_rate"].toDouble();
         const int id = cardObj["mtga_id"].toInt();
 
-        if (id > 0 && avgSeen > 0 && avgPick > 0 && winRate > 0) {
+        if (id > 0) {
             m_cards[id] = CardStatistics { avgSeen, avgPick, winRate };
         }
     }
