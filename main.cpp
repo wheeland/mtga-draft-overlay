@@ -1,6 +1,4 @@
-#include "mainwindow.h"
 #include "cardstatistics.h"
-#include "filter.h"
 #include "logparser.h"
 #include "mousetracker.h"
 
