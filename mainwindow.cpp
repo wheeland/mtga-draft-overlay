@@ -5,29 +5,11 @@
 #include <QTouchEvent>
 #include <QPainter>
 #include <QCursor>
+#include <QTimer>
 
 #include <windows.h>
 #include <cstring>
 #include <tlhelp32.h>
-
-static QVector<int> getProcessesWithName(const wchar_t *name)
-{
-    QVector<int> ret;
-
-    PROCESSENTRY32 entry;
-    entry.dwSize = sizeof(PROCESSENTRY32);
-
-    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-
-    if (Process32First(snapshot, &entry) == TRUE) {
-        while (Process32Next(snapshot, &entry) == TRUE) {
-            if (!wcscmp(entry.szExeFile, name))
-                ret << entry.th32ProcessID;
-        }
-    }
-
-    return ret;
-}
 
 struct EnumWindowsParams
 {
@@ -48,14 +30,37 @@ static BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam)
     return TRUE;
 }
 
-static QVector<HWND> getWindowHandles(int pid)
+static QVector<HWND> getWindowsWithName(const wchar_t *name)
 {
-    Q_ASSERT(pid > 0);
+    QVector<int> pids;
+    QVector<HWND> handles;
 
-    EnumWindowsParams params;
-    params.pid = pid;
-    EnumWindows(EnumWindowsProcMy, (LPARAM)&params);
-    return params.windowHandles;
+    PROCESSENTRY32 entry;
+    entry.dwSize = sizeof(PROCESSENTRY32);
+
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+
+    if (Process32First(snapshot, &entry) == TRUE) {
+        while (Process32Next(snapshot, &entry) == TRUE) {
+            if (!wcscmp(entry.szExeFile, name)) {
+                EnumWindowsParams params;
+                params.pid = entry.th32ProcessID;
+                EnumWindows(EnumWindowsProcMy, (LPARAM)&params);
+                handles << params.windowHandles;
+                pids << params.pid;
+            }
+        }
+    }
+
+    if (handles.size() == 0) {
+        qDebug() << "pids:" << pids;
+    }
+    else if (handles.size() > 1) {
+        qDebug() << "pids:" << pids;
+        qDebug() << "handles:" << handles;
+    }
+
+    return handles;
 }
 
 static int makeLParam(QPoint pos)
@@ -85,16 +90,14 @@ OverlayWindow::OverlayWindow(QWidget *parent)
     : QWidget(parent)
 {
     const QSize size = QApplication::primaryScreen()->size();
-    m_targetProcess = "qtcreator.exe";
+    m_targetProcess = "MTGA.exe";
 
-    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    setAttribute(Qt::WA_AcceptTouchEvents, true);
+    setWindowFlag(Qt::FramelessWindowHint);
+    setWindowFlag(Qt::WindowStaysOnTopHint);
+    setWindowFlag(Qt::WindowTransparentForInput);
     setAttribute(Qt::WA_TranslucentBackground, true);
     setAttribute(Qt::WA_TransparentForMouseEvents, true);
     resize(size);
-
-    // add 'quit' button in top-left
-    // filter mouse/touch events
 }
 
 OverlayWindow::~OverlayWindow()
@@ -105,7 +108,7 @@ void OverlayWindow::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
     painter.setBrush(QColor(0, 0, 0, 255));
-    painter.setOpacity(0.01);
+    painter.setOpacity(0.1);
     painter.drawRect(rect());
 }
 
@@ -125,16 +128,9 @@ bool OverlayWindow::event(QEvent *event)
     if (touch->points().size() != 1)
         return false;
 
-    // get target process PID
-    const wchar_t *name = (const wchar_t*) m_targetProcess.utf16();
-    const QVector<int> pids = getProcessesWithName(name);
-    if (pids.size() != 1) {
-        qDebug() << "can't find process for" << m_targetProcess;
-        return false;
-    }
-
     // get target process window
-    const QVector<HWND> windowHandles = getWindowHandles(pids.first());
+    const wchar_t *name = (const wchar_t*) m_targetProcess.utf16();
+    const QVector<HWND> windowHandles = getWindowsWithName(name);
     if (windowHandles.size() != 1) {
         qDebug() << "can't find single window for" << m_targetProcess;
         return false;
