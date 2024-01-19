@@ -21,40 +21,39 @@ Item {
     Repeater {
         model: _draftModel
         delegate: Component {
-            Rectangle {
+            Item {
                 x:  _layout.cardArtCenter(model.index).x - width / 2
                 y:  _layout.cardArtCenter(model.index).y - height/ 2
                 width: 80
                 height: 80
-                color: "black"
-                opacity: 0.7
+
+                Rectangle {
+                    anchors.fill: parent
+                    color: "black"
+                    opacity: 0.7
+                }
 
                 Column {
-                    padding: 5
-                    spacing: 5
+                    anchors.fill: parent
+                    padding: 3
+                    spacing: 3
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "Pick: " + model.avgPick.toFixed(1)
-                        color: "white"
-                        font.pixelSize: 12
+                        color: _layout.draftValueColor((model.avgPick - 1) / 12.0)
+                        font.pixelSize: 14
                     }
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "ALSA: " + model.avgSeen.toFixed(1)
-                        color: "white"
-                        font.pixelSize: 12
+                        color: _layout.draftValueColor((model.avgSeen - 1) / 9.0)
+                        font.pixelSize: 14
                     }
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "Win: " + (100 * model.winRate).toFixed(1) + "%"
-                        color: "white"
-                        font.pixelSize: 12
-                    }
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Card ID: " + model.id
-                        color: "white"
-                        font.pixelSize: 10
+                        color: _layout.draftValueColor(0.5 + (model.winRate - 0.55) * 10.0)
+                        font.pixelSize: 14
                     }
                 }
             }
