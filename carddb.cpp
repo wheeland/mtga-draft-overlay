@@ -20,7 +20,8 @@ CardDatabase::CardDatabase()
 bool CardDatabase::request(const QVector<int> &ids)
 {
     m_requestedCards << ids;
-    m_scryfallDB.request(ids);
+    for (int id : ids)
+        m_scryfallDB.request(id, "");
 
     clearAvailableCards();
     return m_requestedCards.isEmpty();
