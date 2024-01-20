@@ -10,7 +10,7 @@ class DraftModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    DraftModel(CardStatisticsDatabase *db);
+    DraftModel(CardDatabase *db);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &child) const override;
@@ -31,5 +31,5 @@ private:
 
     QVector<int> m_currCards;
 
-    QPointer<CardStatisticsDatabase> m_cardDB;
+    QPointer<CardDatabase> m_cardDB;
 };

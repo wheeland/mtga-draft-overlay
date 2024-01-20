@@ -17,14 +17,14 @@ static QVector<QByteArray> DRAFT_TYPES = {
     "TradSealed",
 };
 
-CardStatisticsDatabase::CardStatisticsDatabase()
+CardDatabase::CardDatabase()
     : m_network(new QNetworkAccessManager(this))
 {
     connect(
         m_network.data(),
         &QNetworkAccessManager::finished,
         this,
-        &CardStatisticsDatabase::onRequestFinished
+        &CardDatabase::onRequestFinished
     );
 }
 
@@ -35,7 +35,7 @@ static QFile setCacheFile(const QByteArray &set)
     return QFile(dir + QDir::separator() + set + ".json");
 }
 
-void CardStatisticsDatabase::saveSetData(const QByteArray &set, const QByteArray &data) const
+void CardDatabase::saveSetData(const QByteArray &set, const QByteArray &data) const
 {
     QFile file = setCacheFile(set);
     if (file.open(QFile::WriteOnly)) {
@@ -46,7 +46,7 @@ void CardStatisticsDatabase::saveSetData(const QByteArray &set, const QByteArray
     }
 }
 
-bool CardStatisticsDatabase::loadSetData(const QByteArray &set)
+bool CardDatabase::loadSetData(const QByteArray &set)
 {
     QFile file = setCacheFile(set);
     if (file.open(QFile::ReadOnly)) {
@@ -61,7 +61,7 @@ bool CardStatisticsDatabase::loadSetData(const QByteArray &set)
     return false;
 }
 
-void CardStatisticsDatabase::addSet(const QByteArray &setName)
+void CardDatabase::addSet(const QByteArray &setName)
 {
     if (m_sets.contains(setName))
         return;
@@ -74,7 +74,7 @@ void CardStatisticsDatabase::addSet(const QByteArray &setName)
     startDownload(setName);
 }
 
-void CardStatisticsDatabase::startDownload(const QByteArray &set)
+void CardDatabase::startDownload(const QByteArray &set)
 {
     QByteArray url = "https://www.17lands.com/card_ratings/data?expansion={SET}&format={FMT}";
     url.replace("{SET}", set);
@@ -84,13 +84,13 @@ void CardStatisticsDatabase::startDownload(const QByteArray &set)
     m_currentRequests[reply] = set;
 }
 
-void CardStatisticsDatabase::clearCache()
+void CardDatabase::clearCache()
 {
     for (QByteArray set : m_sets)
         startDownload(set);
 }
 
-void CardStatisticsDatabase::onRequestFinished(QNetworkReply *reply)
+void CardDatabase::onRequestFinished(QNetworkReply *reply)
 {
     const QByteArray data = reply->readAll();
     const QByteArray set = m_currentRequests.take(reply);
@@ -99,7 +99,7 @@ void CardStatisticsDatabase::onRequestFinished(QNetworkReply *reply)
     saveSetData(set, data);
 }
 
-bool CardStatisticsDatabase::addCardData(const QByteArray &json)
+bool CardDatabase::addCardData(const QByteArray &json)
 {
     const QJsonArray array = QJsonDocument::fromJson(json).array();
 
@@ -109,9 +109,10 @@ bool CardStatisticsDatabase::addCardData(const QByteArray &json)
         const float avgPick = cardObj["avg_pick"].toDouble();
         const float winRate = cardObj["win_rate"].toDouble();
         const int id = cardObj["mtga_id"].toInt();
+        const QString name = cardObj["name"].toString();
 
         if (id > 0) {
-            m_cards[id] = CardStatistics { avgSeen, avgPick, winRate };
+            m_cards[id] = CardStatistics { id, name, avgSeen, avgPick, winRate };
         }
     }
 

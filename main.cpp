@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     InputTracker tracker;
     LogParser logParser("C:\\Users\\hagen\\AppData\\LocalLow\\Wizards Of The Coast\\MTGA");
 
-    CardStatisticsDatabase cardDB;
+    CardDatabase cardDB;
     cardDB.addSet("LCI");
     cardDB.addSet("BRO");
 

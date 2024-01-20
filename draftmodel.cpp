@@ -1,9 +1,9 @@
 #include "draftmodel.h"
 
-DraftModel::DraftModel(CardStatisticsDatabase *db)
+DraftModel::DraftModel(CardDatabase *db)
     : m_cardDB(db)
 {
-    connect(db, &CardStatisticsDatabase::dataChanged, this, [this]() {
+    connect(db, &CardDatabase::dataChanged, this, [this]() {
         emit dataChanged(createIndex(0, 0), createIndex(20, 0));
     });
 }
@@ -65,8 +65,9 @@ QHash<int, QByteArray> DraftModel::roleNames() const
 
 void DraftModel::onDraftPack(int pack, int pick, QVector<int> cards)
 {
+    beginResetModel();
     m_currCards = cards;
-    emit dataChanged(createIndex(0, 0), createIndex(20, 0));
+    endResetModel();
 }
 
 void DraftModel::onDraftPick(int pack, int pick, int card)

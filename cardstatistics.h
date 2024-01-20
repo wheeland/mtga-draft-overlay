@@ -7,18 +7,20 @@
 
 struct CardStatistics
 {
+    int id;
+    QString name;
     float avgSeen = 0.f;
     float avgPick = 0.f;
     float winRate = 0.f;
 };
 
-class CardStatisticsDatabase : public QObject
+class CardDatabase : public QObject
 {
     Q_OBJECT
 
 public:
-    CardStatisticsDatabase();
-    ~CardStatisticsDatabase() = default;
+    CardDatabase();
+    ~CardDatabase() = default;
 
     void addSet(const QByteArray &setName);
     CardStatistics stats(int card) const { return m_cards[card]; }
