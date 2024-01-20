@@ -1,9 +1,12 @@
 #include "draftmodel.h"
 
+#include <array>
+#include <QColor>
+
 DraftModel::DraftModel(CardDatabase *db)
     : m_cardDB(db)
 {
-    connect(db, &CardDatabase::dataChanged, this, [this]() {
+    connect(db, &CardDatabase::dataAvailable, this, [this]() {
         emit dataChanged(createIndex(0, 0), createIndex(20, 0));
     });
 }
@@ -41,13 +44,17 @@ int DraftModel::columnCount(const QModelIndex &parent) const
 QVariant DraftModel::data(const QModelIndex &index, int role) const
 {
     if (index.row() < m_currCards.size()) {
-        const CardStatistics stats = m_cardDB->stats(m_currCards[index.row()]);
+        const int id = m_currCards[index.row()];
+
+        ScryfallCardData cardData;
+        SeventeenLandsCardStats stats;
+        m_cardDB->get(id, cardData, stats);
 
         switch (role) {
         case ROLE_INDEX: return index.row();
-        case ROLE_ID: return m_currCards[index.row()];
-        case ROLE_NAME: return stats.name;
-        case ROLE_COLOR: return stats.colorMix();
+        case ROLE_ID: return id;
+        case ROLE_NAME: return cardData.name;
+        case ROLE_COLOR: return QColor(255, 255, 255, 255);
         case ROLE_AVG_SEEN: return stats.avgSeen;
         case ROLE_AVG_PICK: return stats.avgPick;
         case ROLE_WIN_RATE: return stats.winRate;
@@ -69,30 +76,54 @@ QHash<int, QByteArray> DraftModel::roleNames() const
     return result;
 }
 
-void DraftModel::onDraftPack(int pack, int pick, QVector<int> cards)
+void DraftModel::updateOverlay()
 {
     beginResetModel();
 
-    m_currCards = cards;
-    std::sort(m_currCards.begin(), m_currCards.end(), [=](int a, int b) {
-        const CardStatistics sa = m_cardDB->stats(a);
-        const CardStatistics sb = m_cardDB->stats(b);
-        if (sa.rarity != sb.rarity)
-            return sa.rarity > sb.rarity;
-        if (sa.isWhite() != sb.isWhite())
-            return sa.isWhite();
-        if (sa.isBlue() != sb.isBlue())
-            return sa.isBlue();
-        if (sa.isBlack() != sb.isBlack())
-            return sa.isBlack();
-        if (sa.isRed() != sb.isRed())
-            return sa.isRed();
-        if (sa.isGreen() != sb.isGreen())
-            return sa.isGreen();
-        return a < b;
+    m_currCards = m_requestedCards;
+    std::sort(m_currCards.begin(), m_currCards.end(), [=](int idA, int idB) {
+        const ScryfallCardData a = m_cardDB->scryfallDB().get(idA);
+        const ScryfallCardData b = m_cardDB->scryfallDB().get(idB);
+
+        // more rare = more first
+        if (a.rarity != b.rarity)
+            return a.rarity > b.rarity;
+
+        // next, cards are sorted by color identity
+        static std::array<Card::Color, 5> COLORS{Card::White, Card::Blue, Card::Black, Card::Red, Card::Green};
+        if (a.colorIdentity != b.colorIdentity) {
+            for (Card::Color color : COLORS) {
+                if (a.colorIdentity.testFlag(color) != b.colorIdentity.testFlag(color))
+                    return a.colorIdentity.testFlag(color);
+            }
+        }
+
+        // within one color identity, colorless cards go first
+        if (a.colors != b.colors) {
+            if (a.colors == Card::Uncolored)
+                return true;
+            if (b.colors == Card::Uncolored)
+                return true;
+        }
+
+        return idA < idB;
     });
 
     endResetModel();
+}
+
+void DraftModel::onDraftPack(int pack, int pick, QVector<int> cards)
+{
+    m_requestedCards = cards;
+    const bool available = m_cardDB->request(cards);
+
+    if (available) {
+        updateOverlay();
+    } else {
+        beginResetModel();
+        m_currCards.clear();
+        endResetModel();
+    }
 }
 
 void DraftModel::onDraftPick(int pack, int pick, int card)

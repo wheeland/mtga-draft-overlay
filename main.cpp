@@ -1,5 +1,5 @@
 #include "cardlayout.h"
-#include "cardstatistics.h"
+#include "carddb.h"
 #include "draftmodel.h"
 #include "logparser.h"
 #include "inputtracker.h"
@@ -23,8 +23,6 @@ int main(int argc, char *argv[])
     LogParser logParser("C:\\Users\\hagen\\AppData\\LocalLow\\Wizards Of The Coast\\MTGA");
 
     CardDatabase cardDB;
-    cardDB.addSet("LCI");
-    cardDB.addSet("BRO");
 
     DraftModel model(&cardDB);
     QObject::connect(&logParser, &LogParser::draftPack, &model, &DraftModel::onDraftPack);

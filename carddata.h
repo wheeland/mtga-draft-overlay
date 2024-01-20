@@ -9,7 +9,7 @@ class Card : public QObject
 public:
     enum Color
     {
-        None    = 0x0,
+        Uncolored    = 0x0,
         White   = 0x1,
         Blue    = 0x2,
         Black   = 0x4,

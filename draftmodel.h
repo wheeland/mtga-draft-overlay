@@ -3,7 +3,7 @@
 #include <QAbstractItemModel>
 #include <QPointer>
 
-#include "cardstatistics.h"
+#include "carddb.h"
 
 class DraftModel : public QAbstractItemModel
 {
@@ -23,12 +23,16 @@ public slots:
     void onDraftPack(int pack, int pick, QVector<int> cards);
     void onDraftPick(int pack, int pick, int card);
 
+private slots:
+    void updateOverlay();
+
 private:
     // struct DraftRound {
     //     QVector<int> cards;
     //     int pick;
     // };
 
+    QVector<int> m_requestedCards;
     QVector<int> m_currCards;
 
     QPointer<CardDatabase> m_cardDB;
