@@ -103,8 +103,8 @@ Item {
                         }
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "Win: " + (100 * model.winRate).toFixed(1) + "%"
-                            color: _layout.draftValueColor(0.5 + (model.winRate - 0.55) * 10.0)
+                            text: model.name
+                            color: model.color
                             font.pixelSize: 14
                         }
                     }

@@ -7,8 +7,9 @@
 #include <QJsonObject>
 #include <QNetworkReply>
 #include <QStandardPaths>
+#include <QVector4D>
 
-static QVector<QByteArray> DRAFT_TYPES = {
+static const QVector<QByteArray> DRAFT_TYPES = {
     "PremierDraft",
     "QuickDraft",
     "BotDraft",
@@ -16,6 +17,29 @@ static QVector<QByteArray> DRAFT_TYPES = {
     "Sealed",
     "TradSealed",
 };
+
+QColor CardStatistics::colorMix() const
+{
+    QVector4D ret(0, 0, 0, 0);
+
+    if (color & CardDatabase::White)
+        ret += QVector4D(255, 255, 255, 1);
+    if (color & CardDatabase::Blue)
+        ret += QVector4D(100, 100, 255, 1);
+    if (color & CardDatabase::Black)
+        ret += QVector4D(100, 100, 100, 1);
+    if (color & CardDatabase::Red)
+        ret += QVector4D(255, 100, 100, 1);
+    if (color & CardDatabase::Green)
+        ret += QVector4D(100, 255, 100, 1);
+
+    if (ret.w() == 0)
+        return QColor(160, 160, 160);
+
+    ret /= ret.w();
+
+    return QColor(ret.x(), ret.y(), ret.z(), 255);
+}
 
 CardDatabase::CardDatabase()
     : m_network(new QNetworkAccessManager(this))
@@ -26,6 +50,11 @@ CardDatabase::CardDatabase()
         this,
         &CardDatabase::onRequestFinished
     );
+}
+
+CardStatistics CardDatabase::stats(int card) const
+{
+    return m_cards[card];
 }
 
 static QFile setCacheFile(const QByteArray &set)
@@ -86,7 +115,7 @@ void CardDatabase::startDownload(const QByteArray &set)
 
 void CardDatabase::clearCache()
 {
-    for (QByteArray set : m_sets)
+    for (const QByteArray &set : m_sets)
         startDownload(set);
 }
 
@@ -110,9 +139,30 @@ bool CardDatabase::addCardData(const QByteArray &json)
         const float winRate = cardObj["win_rate"].toDouble();
         const int id = cardObj["mtga_id"].toInt();
         const QString name = cardObj["name"].toString();
+        const QString colorS = cardObj["color"].toString();
+        const QString rarityS = cardObj["rarity"].toString();
+
+        CardDatabase::Colors colors = CardDatabase::None;
+        colors |= colorS.contains("W") ? CardDatabase::White : CardDatabase::None;
+        colors |= colorS.contains("U") ? CardDatabase::Blue : CardDatabase::None;
+        colors |= colorS.contains("B") ? CardDatabase::Black : CardDatabase::None;
+        colors |= colorS.contains("R") ? CardDatabase::Red : CardDatabase::None;
+        colors |= colorS.contains("G") ? CardDatabase::Green : CardDatabase::None;
+
+        CardDatabase::Rarity rarity = CardDatabase::Unknown;
+        if (rarityS == "common")
+            rarity = CardDatabase::Common;
+        else if (rarityS == "uncommon")
+            rarity = CardDatabase::Uncommon;
+        else if (rarityS == "rare")
+            rarity = CardDatabase::Rare;
+        else if (rarityS == "mythic")
+            rarity = CardDatabase::Mythic;
+        else
+            qWarning() << "Invalid rarity:" << rarityS;
 
         if (id > 0) {
-            m_cards[id] = CardStatistics { id, name, avgSeen, avgPick, winRate };
+            m_cards[id] = CardStatistics { id, name, colors, rarity, avgSeen, avgPick, winRate };
         }
     }
 
