@@ -118,8 +118,13 @@ bool SeventeenLandsDatabase::addCardData(const QByteArray &json)
         const float winRate = cardObj["win_rate"].toDouble();
         const int id = cardObj["mtga_id"].toInt();
 
+        const QString url = cardObj["url"].toString();
+        const int lastSlash = url.lastIndexOf('/');
+        const int lastDot = url.lastIndexOf('.');
+        const QByteArray scryfallId = url.mid(lastSlash + 1, lastDot - lastSlash - 1).toLocal8Bit();
+
         if (id > 0) {
-            m_cards[id] = SeventeenLandsCardStats { id, avgSeen, avgPick, winRate };
+            m_cards[id] = SeventeenLandsCardStats { scryfallId, id, avgSeen, avgPick, winRate };
         }
     }
 

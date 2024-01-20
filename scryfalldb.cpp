@@ -52,15 +52,13 @@ static Card::Rarity getRarity(const QString &str)
 
 static bool parseCardJson(const QJsonObject &json, ScryfallCardData &card)
 {
-    const int arenaId = json["arena_id"].toInt(-1);
     const QString name = json["name"].toString().toLocal8Bit();
     const QByteArray scryfallId = json["id"].toString().toLocal8Bit();
     const QByteArray set = json["set"].toString().toLocal8Bit();
     const Card::Colors colors = getColors(json["colors"].toArray());
     const Card::Colors colorIdentity = getColors(json["colors"].toArray());
     const Card::Rarity rarity = getRarity(json["rarity"].toString());
-    if (arenaId > 0 && !name.isEmpty() && !scryfallId.isEmpty() && set.size() == 3) {
-        card.arenaId = arenaId;
+    if (!name.isEmpty() && !scryfallId.isEmpty() && set.size() == 3) {
         card.name = name;
         card.scryfallId = scryfallId;
         card.set = set;
@@ -94,6 +92,9 @@ ScryfallDatabase::ScryfallDatabase(QObject *parent)
 
 void ScryfallDatabase::request(int arenaId, const QByteArray &scryfallId)
 {
+    if (!scryfallId.isEmpty())
+        m_scryfallToArenaId[scryfallId] = arenaId;
+
     if (m_cards.contains(arenaId))
         return;
 
@@ -107,14 +108,16 @@ void ScryfallDatabase::request(int arenaId, const QByteArray &scryfallId)
         const QJsonObject root = QJsonDocument::fromJson(json).object();
         ScryfallCardData card;
         if (parseCardJson(root, card)) {
-            m_cards[card.arenaId] = card;
-            emit cardAvailable(card.arenaId);
+            m_cards[arenaId] = card;
+            qInfo() << "[Scryfall] Card loaded from cache:" << arenaId;
+            emit cardAvailable(arenaId);
             return;
         }
     }
 
-    if (!m_leftToRequest.contains(arenaId)) {
-        m_leftToRequest << arenaId;
+    const QPair<int, QByteArray> req(arenaId, scryfallId);
+    if (!m_leftToRequest.contains(req)) {
+        m_leftToRequest << req;
         if (!m_requestTimer.isActive())
             m_requestTimer.start(100);
     }
@@ -132,16 +135,17 @@ void ScryfallDatabase::onRequestFinished(QNetworkReply *reply)
 
     ScryfallCardData card;
     if (parseCardJson(root, card)) {
-        QFile file = cardCacheFile(card.arenaId);
+        const int arenaId = m_scryfallToArenaId.value(card.scryfallId, root["arena_id"].toInt());
+        QFile file = cardCacheFile(arenaId);
         if (file.open(QFile::WriteOnly)) {
             file.write(json);
         }
-        m_cards[card.arenaId] = card;
-        emit cardAvailable(card.arenaId);
+        qInfo() << "[Scryfall] Card downloaded from web:" << arenaId;
+        m_cards[arenaId] = card;
+        emit cardAvailable(arenaId);
         emit dataChanged();
     } else {
-        qWarning() << "Failed to parse Scryfall JSON data for" << m_runningRequestId;
-        m_leftToRequest << m_runningRequestId;
+        qWarning() << "[Scryfall] Failed to parse JSON data for" << m_runningRequestId;
     }
 
     m_runningRequestId = -1;
@@ -153,7 +157,11 @@ void ScryfallDatabase::maybeSendRequest()
     if (m_runningRequestId > 0 || m_leftToRequest.isEmpty())
         return;
 
-    m_runningRequestId = m_leftToRequest.takeFirst();
-    const QByteArray url = "https://api.scryfall.com/cards/arena/" + QByteArray::number(m_runningRequestId);
+    const QPair<int, QByteArray> req = m_leftToRequest.takeFirst();
+    m_runningRequestId = req.first;
+
+    const QByteArray url = req.second.isEmpty()
+        ? "https://api.scryfall.com/cards/arena/" + QByteArray::number(m_runningRequestId)
+        : "https://api.scryfall.com/cards/" + req.second;
     m_network.get(QNetworkRequest(QUrl(url)));
 }

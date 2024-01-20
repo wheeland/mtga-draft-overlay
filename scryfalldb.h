@@ -7,7 +7,6 @@
 
 struct ScryfallCardData
 {
-    int arenaId = -1;
     QString name;
     QByteArray scryfallId;
     QByteArray set;
@@ -15,7 +14,7 @@ struct ScryfallCardData
     Card::Colors colorIdentity = Card::Uncolored;
     Card::Rarity rarity = Card::Unknown;
 
-    bool valid() const { return arenaId >= 0; }
+    bool valid() const { return !scryfallId.isEmpty(); }
     operator bool() const { return valid(); }
 };
 
@@ -43,7 +42,8 @@ private:
     QNetworkAccessManager m_network;
     QTimer m_requestTimer;
     int m_runningRequestId = -1;
-    QVector<int> m_leftToRequest;
+    QVector<QPair<int, QByteArray>> m_leftToRequest;
 
+    QHash<QByteArray, int> m_scryfallToArenaId;
     QHash<int, ScryfallCardData> m_cards;
 };

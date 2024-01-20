@@ -6,6 +6,7 @@
 
 struct SeventeenLandsCardStats
 {
+    QByteArray scryfallId;
     int id = -1;
     float avgSeen = 0.f;
     float avgPick = 0.f;
