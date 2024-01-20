@@ -22,15 +22,15 @@ QColor CardStatistics::colorMix() const
 {
     QVector4D ret(0, 0, 0, 0);
 
-    if (color & CardDatabase::White)
+    if (color & Card::White)
         ret += QVector4D(255, 255, 255, 1);
-    if (color & CardDatabase::Blue)
+    if (color & Card::Blue)
         ret += QVector4D(100, 100, 255, 1);
-    if (color & CardDatabase::Black)
+    if (color & Card::Black)
         ret += QVector4D(100, 100, 100, 1);
-    if (color & CardDatabase::Red)
+    if (color & Card::Red)
         ret += QVector4D(255, 100, 100, 1);
-    if (color & CardDatabase::Green)
+    if (color & Card::Green)
         ret += QVector4D(100, 255, 100, 1);
 
     if (ret.w() == 0)
@@ -142,22 +142,22 @@ bool CardDatabase::addCardData(const QByteArray &json)
         const QString colorS = cardObj["color"].toString();
         const QString rarityS = cardObj["rarity"].toString();
 
-        CardDatabase::Colors colors = CardDatabase::None;
-        colors |= colorS.contains("W") ? CardDatabase::White : CardDatabase::None;
-        colors |= colorS.contains("U") ? CardDatabase::Blue : CardDatabase::None;
-        colors |= colorS.contains("B") ? CardDatabase::Black : CardDatabase::None;
-        colors |= colorS.contains("R") ? CardDatabase::Red : CardDatabase::None;
-        colors |= colorS.contains("G") ? CardDatabase::Green : CardDatabase::None;
+        Card::Colors colors = Card::None;
+        colors |= colorS.contains("W") ? Card::White : Card::None;
+        colors |= colorS.contains("U") ? Card::Blue : Card::None;
+        colors |= colorS.contains("B") ? Card::Black : Card::None;
+        colors |= colorS.contains("R") ? Card::Red : Card::None;
+        colors |= colorS.contains("G") ? Card::Green : Card::None;
 
-        CardDatabase::Rarity rarity = CardDatabase::Unknown;
+        Card::Rarity rarity = Card::Unknown;
         if (rarityS == "common")
-            rarity = CardDatabase::Common;
+            rarity = Card::Common;
         else if (rarityS == "uncommon")
-            rarity = CardDatabase::Uncommon;
+            rarity = Card::Uncommon;
         else if (rarityS == "rare")
-            rarity = CardDatabase::Rare;
+            rarity = Card::Rare;
         else if (rarityS == "mythic")
-            rarity = CardDatabase::Mythic;
+            rarity = Card::Mythic;
         else
             qWarning() << "Invalid rarity:" << rarityS;
 

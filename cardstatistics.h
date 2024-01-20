@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QVector>
 
+#include "carddata.h"
+
 struct CardStatistics;
 
 class CardDatabase : public QObject
@@ -13,28 +15,6 @@ class CardDatabase : public QObject
     Q_OBJECT
 
 public:
-
-    enum Color
-    {
-        None    = 0x0,
-        White   = 0x1,
-        Blue    = 0x2,
-        Black   = 0x4,
-        Red     = 0x8,
-        Green   = 0x10,
-    };
-    Q_DECLARE_FLAGS(Colors, Color)
-    Q_FLAG(Color)
-
-    enum Rarity
-    {
-        Unknown,
-        Common,
-        Uncommon,
-        Rare,
-        Mythic,
-    };
-
     CardDatabase();
     ~CardDatabase() = default;
 
@@ -66,17 +46,17 @@ struct CardStatistics
 {
     int id;
     QString name;
-    CardDatabase::Colors color;
-    CardDatabase::Rarity rarity;
+    Card::Colors color;
+    Card::Rarity rarity;
     float avgSeen = 0.f;
     float avgPick = 0.f;
     float winRate = 0.f;
 
-    bool isWhite() const { return color & CardDatabase::White; }
-    bool isBlue() const { return color & CardDatabase::Blue; }
-    bool isBlack() const { return color & CardDatabase::Black; }
-    bool isRed() const { return color & CardDatabase::Red; }
-    bool isGreen() const { return color & CardDatabase::Green; }
+    bool isWhite() const { return color & Card::White; }
+    bool isBlue() const { return color & Card::Blue; }
+    bool isBlack() const { return color & Card::Black; }
+    bool isRed() const { return color & Card::Red; }
+    bool isGreen() const { return color & Card::Green; }
 
     QColor colorMix() const;
 };
