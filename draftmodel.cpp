@@ -6,9 +6,7 @@
 DraftModel::DraftModel(CardDatabase *db)
     : m_cardDB(db)
 {
-    connect(db, &CardDatabase::dataAvailable, this, [this]() {
-        emit dataChanged(createIndex(0, 0), createIndex(20, 0));
-    });
+    connect(db, &CardDatabase::dataAvailable, this, &DraftModel::updateOverlay);
 }
 
 enum Roles {
