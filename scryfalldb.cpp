@@ -142,11 +142,13 @@ void ScryfallDatabase::onRequestFinished(QNetworkReply *reply)
         }
         qInfo() << "[Scryfall] Card downloaded from web:" << arenaId;
         m_cards[arenaId] = card;
-        emit cardAvailable(arenaId);
-        emit dataChanged();
     } else {
-        qWarning() << "[Scryfall] Failed to parse JSON data for" << m_runningRequestId;
+        m_cards[m_runningRequestId] = card;
+        qWarning() << "[Scryfall] Failed to parse JSON data for" << m_runningRequestId << ":" << reply->url().toString();
     }
+
+    emit cardAvailable(m_runningRequestId);
+    emit dataChanged();
 
     m_runningRequestId = -1;
     m_requestTimer.start(100);
