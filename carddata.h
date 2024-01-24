@@ -19,6 +19,8 @@ public:
     Q_DECLARE_FLAGS(Colors, Color)
     Q_FLAG(Color)
 
+    static int colorCount(Colors colors);
+
     enum Rarity
     {
         Unknown,
