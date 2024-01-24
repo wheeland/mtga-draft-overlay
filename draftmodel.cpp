@@ -87,6 +87,14 @@ void DraftModel::updateOverlay()
         if (a.rarity != b.rarity)
             return a.rarity > b.rarity;
 
+        // cards with multiple colors always go later than singular colors
+        const int colorCountA = Card::colorCount(a.colors);
+        const int colorCountB = Card::colorCount(b.colors);
+        if (colorCountA == 2 && colorCountB < 2)
+            return false;
+        if (colorCountA < 2 && colorCountB == 2)
+            return true;
+
         // next, cards are sorted by color identity
         static std::array<Card::Color, 5> COLORS{Card::White, Card::Blue, Card::Black, Card::Red, Card::Green};
         if (a.colorIdentity != b.colorIdentity) {
@@ -101,7 +109,7 @@ void DraftModel::updateOverlay()
             if (a.colors == Card::Uncolored)
                 return true;
             if (b.colors == Card::Uncolored)
-                return true;
+                return false;
         }
 
         return idA < idB;
