@@ -13,6 +13,9 @@ LogParser::LogParser(const QString &directory, QObject *parent)
     , m_watcher(new QFileSystemWatcher({directory + QDir::separator() + "player.log"}))
     , m_directory(directory)
 {
+    if (!QFile::exists(directory + QDir::separator() + "player.log"))
+        qFatal("log file doesn't exist");
+
     connect(
         m_watcher.data(),
         &QFileSystemWatcher::fileChanged,
