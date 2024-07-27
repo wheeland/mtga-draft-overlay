@@ -58,10 +58,13 @@ static bool parseCardJson(const QJsonObject &json, ScryfallCardData &card)
     const Card::Colors colors = getColors(json["colors"].toArray());
     const Card::Colors colorIdentity = getColors(json["color_identity"].toArray());
     const Card::Rarity rarity = getRarity(json["rarity"].toString());
+    const QByteArray typeLine = json["type_line"].toString().toLocal8Bit();
+
     if (!name.isEmpty() && !scryfallId.isEmpty() && set.size() == 3) {
         card.name = name;
         card.scryfallId = scryfallId;
         card.set = set;
+        card.typeLine = typeLine;
         card.colors = colors;
         card.colorIdentity = colorIdentity;
         card.rarity = rarity;

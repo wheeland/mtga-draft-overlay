@@ -10,11 +10,13 @@ struct ScryfallCardData
     QString name;
     QByteArray scryfallId;
     QByteArray set;
+    QByteArray typeLine;
     Card::Colors colors = Card::Uncolored;
     Card::Colors colorIdentity = Card::Uncolored;
     Card::Rarity rarity = Card::Unknown;
 
     bool valid() const { return !scryfallId.isEmpty(); }
+    bool isBasicLand() const { return typeLine.startsWith("Basic Land"); }
     operator bool() const { return valid(); }
 };
 
