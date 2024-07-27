@@ -36,7 +36,7 @@ bool CardDatabase::get(int id, ScryfallCardData &scryfallData, SeventeenLandsCar
 {
     ScryfallCardData cardData = m_scryfallDB.get(id);
     SeventeenLandsCardStats stats = m_seventeenLandsDB.stats(id);
-    if (cardData && stats) {
+    if (cardData && (stats || cardData.isBasicLand())) {
         scryfallData = cardData;
         seventeenLandsStats = stats;
         return true;
@@ -65,7 +65,7 @@ void CardDatabase::clearAvailableCards()
 
         m_seventeenLandsDB.addSet(cardData.set);
         SeventeenLandsCardStats stats = m_seventeenLandsDB.stats(id);
-        if (!stats)
+        if (!stats && !cardData.isBasicLand())
             return false;
 
         return true;
