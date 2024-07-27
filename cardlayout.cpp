@@ -3,13 +3,35 @@
 #include <QDebug>
 #include <QVector3D>
 
+struct Layout {
+    static Layout layout(QSize resolution)
+    {
+        if (resolution == QSize(1920, 1080)) {
+            return { {398, 240}, {160, 200} };
+        } else if (resolution == QSize(2560, 1440)) {
+            return { {520, 310}, {214, 274}};
+        }
+        else {
+            qFatal("unsupported resolution");
+        }
+    }
+
+    QPoint topLeft;
+    QPoint cardOfs;
+};
+
+void CardLayout::setSize(QSize size)
+{
+    m_size = size;
+    emit update();
+}
+
 QPoint CardLayout::cardArtCenter(int index)
 {
-    static const QPoint topLeft(398, 240);
-    static const QPoint cardOfs(160, 200);
+    const Layout layout = Layout::layout(m_size);
 
-    const int x = topLeft.x() + cardOfs.x() * (index % 8);
-    const int y = topLeft.y() + cardOfs.y() * (index / 8);
+    const int x = layout.topLeft.x() + layout.cardOfs.x() * (index % 8);
+    const int y = layout.topLeft.y() + layout.cardOfs.y() * (index / 8);
 
     return QPoint(x, y);
 }

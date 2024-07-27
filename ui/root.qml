@@ -74,15 +74,15 @@ Item {
             delegate: Component {
                 Item {
                     visible: root.showDraftInfo
-                    x:  _layout.cardArtCenter(model.index).x - width / 2
-                    y:  _layout.cardArtCenter(model.index).y - height/ 2
-                    width: 80
+                    x:  _layout.cardArtCenter(model.index).x - width / 2 + _layout.dummy
+                    y:  _layout.cardArtCenter(model.index).y - height/ 2 + _layout.dummy
+                    width: 120
                     height: 80
 
                     Rectangle {
                         anchors.fill: parent
                         color: "black"
-                        opacity: 0.7
+                        opacity: 0.9
                     }
 
                     Column {

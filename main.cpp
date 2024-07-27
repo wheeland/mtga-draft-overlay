@@ -47,5 +47,7 @@ int main(int argc, char *argv[])
     view.setFlag(Qt::WindowTransparentForInput);
     view.showFullScreen();
 
+    layout.setSize(view.size());
+
     return app.exec();
 }
