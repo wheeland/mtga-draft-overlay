@@ -87,6 +87,16 @@ void DraftModel::updateOverlay()
         if (a.rarity != b.rarity)
             return a.rarity > b.rarity;
 
+        // basic lands always go very last
+        if (a.isBasicLand() != b.isBasicLand()) {
+            return b.isBasicLand();
+        }
+
+        // lands always go last
+        if (a.isLand() != b.isLand()) {
+            return b.isLand();
+        }
+
         // cards with multiple colors always go later than singular colors
         const int colorCountA = Card::colorCount(a.colors);
         const int colorCountB = Card::colorCount(b.colors);
