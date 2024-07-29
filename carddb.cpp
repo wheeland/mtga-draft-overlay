@@ -47,11 +47,11 @@ bool CardDatabase::get(int id, ScryfallCardData &scryfallData, SeventeenLandsCar
 
 void CardDatabase::checkIfAvailable()
 {
-    const bool wasWaiting = !m_requestedCards.isEmpty();
+    const int prevWaiting = m_requestedCards.size();
     clearAvailableCards();
-    const bool isReady = m_requestedCards.isEmpty();
+    const int nowWaiting = m_requestedCards.size();
 
-    if (wasWaiting && isReady) {
+    if (prevWaiting != nowWaiting) {
         emit dataAvailable();
     }
 }

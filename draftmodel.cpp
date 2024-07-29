@@ -79,6 +79,11 @@ void DraftModel::updateOverlay()
     beginResetModel();
 
     m_currCards = m_requestedCards;
+
+    m_currCards.removeIf([&](int id) {
+        return !m_cardDB->scryfallDB().get(id);
+    });
+
     std::sort(m_currCards.begin(), m_currCards.end(), [=](int idA, int idB) {
         const ScryfallCardData a = m_cardDB->scryfallDB().get(idA);
         const ScryfallCardData b = m_cardDB->scryfallDB().get(idB);
