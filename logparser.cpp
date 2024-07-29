@@ -70,7 +70,7 @@ void LogParser::parseJson(const QByteArray &json)
             const int card = info["CardId"].toString().toInt();
 
             if (card > 0) {
-                emit draftPick(pack, pick, card);
+//                emit draftPick(pack, pick, card);
             }
         }
     }

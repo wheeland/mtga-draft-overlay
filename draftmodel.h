@@ -21,7 +21,6 @@ public:
 
 public slots:
     void onDraftPack(int pack, int pick, QVector<int> cards);
-    void onDraftPick(int pack, int pick, int card);
 
 private slots:
     void updateOverlay();

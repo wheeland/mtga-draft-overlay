@@ -141,8 +141,3 @@ void DraftModel::onDraftPack(int pack, int pick, QVector<int> cards)
         endResetModel();
     }
 }
-
-void DraftModel::onDraftPick(int pack, int pick, int card)
-{
-
-}

@@ -20,7 +20,6 @@ public:
 
 signals:
     void draftPack(int pack, int pick, QVector<int> cards);
-    void draftPick(int pack, int pick, int card);
 
 private slots:
     void onFileChanged(const QString &path);

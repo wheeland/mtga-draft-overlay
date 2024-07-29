@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
 
     DraftModel model(&cardDB);
     QObject::connect(&logParser, &LogParser::draftPack, &model, &DraftModel::onDraftPack);
-    QObject::connect(&logParser, &LogParser::draftPick, &model, &DraftModel::onDraftPick);
     logParser.startParsing();
 
     QSurfaceFormat surfaceFormat;
