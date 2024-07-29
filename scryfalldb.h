@@ -17,6 +17,7 @@ struct ScryfallCardData
 
     bool valid() const { return !scryfallId.isEmpty(); }
     bool isBasicLand() const { return typeLine.startsWith("Basic Land"); }
+    bool isLand() const {return typeLine.startsWith("Basic Land") || typeLine.startsWith("Land"); }
     operator bool() const { return valid(); }
 };
 
