@@ -41,11 +41,16 @@ private slots:
     void onRequestFinished(QNetworkReply *reply);
 
 private:
+    struct Request {
+        int arenaId;
+        QByteArray scryfallId;
+        bool operator==(const Request &other) const { return arenaId == other.arenaId && scryfallId == other.scryfallId; }
+    };
 
     QNetworkAccessManager m_network;
     QTimer m_requestTimer;
-    int m_runningRequestId = -1;
-    QVector<QPair<int, QByteArray>> m_leftToRequest;
+    std::optional<Request> m_runningRequest;
+    QVector<Request> m_leftToRequest;
 
     QHash<QByteArray, int> m_scryfallToArenaId;
     QHash<int, ScryfallCardData> m_cards;

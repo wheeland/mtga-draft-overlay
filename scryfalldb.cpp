@@ -101,7 +101,7 @@ void ScryfallDatabase::request(int arenaId, const QByteArray &scryfallId)
     if (m_cards.contains(arenaId))
         return;
 
-    if (m_runningRequestId == arenaId)
+    if (m_runningRequest && m_runningRequest->arenaId == arenaId)
         return;
 
     // try to load from cache file?
@@ -118,7 +118,7 @@ void ScryfallDatabase::request(int arenaId, const QByteArray &scryfallId)
         }
     }
 
-    const QPair<int, QByteArray> req(arenaId, scryfallId);
+    const Request req{ arenaId, scryfallId };
     if (!m_leftToRequest.contains(req)) {
         m_leftToRequest << req;
         if (!m_requestTimer.isActive())
@@ -145,28 +145,29 @@ void ScryfallDatabase::onRequestFinished(QNetworkReply *reply)
         }
         qInfo() << "[Scryfall] Card downloaded from web:" << arenaId;
         m_cards[arenaId] = card;
+
+        emit cardAvailable(m_runningRequest->arenaId);
+        emit dataChanged();
     } else {
-        m_cards[m_runningRequestId] = card;
-        qWarning() << "[Scryfall] Failed to parse JSON data for" << m_runningRequestId << ":" << reply->url().toString();
+        m_cards[m_runningRequest->arenaId] = card;
+        qWarning() << "[Scryfall] Failed to parse JSON data for" << m_runningRequest->arenaId << ":" << reply->url().toString() << ".. retrying ...";
+
+        m_leftToRequest << *m_runningRequest;
     }
 
-    emit cardAvailable(m_runningRequestId);
-    emit dataChanged();
-
-    m_runningRequestId = -1;
+    m_runningRequest = std::nullopt;
     m_requestTimer.start(100);
 }
 
 void ScryfallDatabase::maybeSendRequest()
 {
-    if (m_runningRequestId > 0 || m_leftToRequest.isEmpty())
+    if (m_runningRequest || m_leftToRequest.isEmpty())
         return;
 
-    const QPair<int, QByteArray> req = m_leftToRequest.takeFirst();
-    m_runningRequestId = req.first;
+    m_runningRequest = m_leftToRequest.takeFirst();
 
-    const QByteArray url = req.second.isEmpty()
-        ? "https://api.scryfall.com/cards/arena/" + QByteArray::number(m_runningRequestId)
-        : "https://api.scryfall.com/cards/" + req.second;
+    const QByteArray url = m_runningRequest->scryfallId.isEmpty()
+        ? "https://api.scryfall.com/cards/arena/" + QByteArray::number(m_runningRequest->arenaId)
+        : "https://api.scryfall.com/cards/" + m_runningRequest->scryfallId;
     m_network.get(QNetworkRequest(QUrl(url)));
 }
