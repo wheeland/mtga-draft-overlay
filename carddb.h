@@ -24,6 +24,9 @@ public:
 signals:
     void dataAvailable();
 
+public slots:
+    void clearCache();
+
 private slots:
     void checkIfAvailable();
 

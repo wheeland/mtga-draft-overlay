@@ -71,3 +71,7 @@ void CardDatabase::clearAvailableCards()
         return true;
     });
 }
+
+void CardDatabase::clearCache() {
+    m_seventeenLandsDB.clearCache();
+}
