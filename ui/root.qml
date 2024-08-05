@@ -5,7 +5,7 @@ Item {
     anchors.fill: parent
 
     property bool draftInfoEnabled: false
-    property bool showDraftInfo: root.draftInfoEnabled && !_inputTracker.alt
+    property bool showDraftInfo: root.draftInfoEnabled === !_inputTracker.alt
 
     Column {
         id: controlsRow
