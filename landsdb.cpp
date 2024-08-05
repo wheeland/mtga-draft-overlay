@@ -86,7 +86,7 @@ void SeventeenLandsDatabase::startDownload(const QByteArray &set)
 {
     QByteArray url = "https://www.17lands.com/card_ratings/data?expansion={SET}&format={FMT}";
     url.replace("{SET}", set);
-    url.replace("{FMT}", DRAFT_TYPES[1]);
+    url.replace("{FMT}", DRAFT_TYPES[0]);
 
     QNetworkReply *reply = m_network.get(QNetworkRequest(QUrl(url)));
     m_currentRequests[reply] = set;
