@@ -9,7 +9,8 @@
 
 static QVector<QByteArray> PREFIXES = {
     "[UnityCrossThreadLogger]==> LogBusinessEvents ",
-    "[UnityCrossThreadLogger]==> BotDraft_DraftPick "
+    "[UnityCrossThreadLogger]==> BotDraft_DraftPick ",
+    "[UnityCrossThreadLogger]Draft.Notify ",
 };
 
 LogParser::LogParser(const QString &directory, WatchType watchType, QObject *parent)
@@ -25,7 +26,7 @@ LogParser::LogParser(const QString &directory, WatchType watchType, QObject *par
     } else {
         m_timer.reset(new QTimer(this));
         m_timer->setSingleShot(false);
-        m_timer->setInterval(500);
+        m_timer->setInterval(1000);
         m_timer->start();
         connect(m_timer.data(), &QTimer::timeout, this, [=]() {
             onFileChanged(m_directory + QDir::separator() + "player.log");
@@ -54,7 +55,18 @@ void LogParser::parseJson(const QByteArray &json)
     const QJsonObject root = QJsonDocument::fromJson(json).object();
 
     if (!root.isEmpty()) {
-        if (root["CurrentModule"] == "BotDraft") {
+        if (root.contains("draftId") && root.contains("PackCards")) {
+            const int pack = root["SelfPack"].toInt();
+            const int pick = root["SelfPick"].toInt();
+            QVector<int> cards;
+            for (QString card : root["PackCards"].toString().split(",")) {
+                if (int c = card.toInt())
+                    cards << c;
+            }
+            emit draftPack(pack, pick, cards);
+        }
+
+        else if (root["CurrentModule"] == "BotDraft") {
             const QByteArray payloadStr = root["Payload"].toString().toUtf8();
             const QJsonObject payload = QJsonDocument::fromJson(payloadStr).object();
             const int pack = payload["PackNumber"].toInt(-1);
@@ -63,10 +75,9 @@ void LogParser::parseJson(const QByteArray &json)
             emit draftPack(pack, pick, cards);
         }
 
-        if (root["request"].isString()) {
+        else if (root["request"].isString()) {
             const QByteArray requestStr = root["request"].toString().toUtf8();
             const QJsonObject request = QJsonDocument::fromJson(requestStr).object();
-
 
             QByteArray payloadStr = request["Payload"].toString().toUtf8();
             if (!payloadStr.isEmpty()) {
@@ -82,43 +93,31 @@ void LogParser::parseJson(const QByteArray &json)
     //                emit draftPick(pack, pick, card);
                 }
             }
-
-            if (request["EventId"].toString().startsWith("PremierDraft")) {
-                const int pack = request["PackNumber"].toInt(-1);
-                const int pick = request["PickNumber"].toInt(-1);
-                const QVector<int> cards = parseInts(request["CardsInPack"].toArray());
-                emit draftPack(pack, pick, cards);
-            }
         }
     }
 }
 
 void LogParser::onFileChanged(const QString &path)
 {
-    const int fileSize = QFileInfo(path).size();
-    if (m_lastFileSize != fileSize) {
-        m_lastFileSize = fileSize;
+    QFile file(path);
+    if (file.open(QFile::ReadOnly)) {
+        const QByteArray data = file.readAll();
+        const QVector<QByteArray> lines = data.split('\n');
 
-        QFile file(path);
-        if (file.open(QFile::ReadOnly)) {
-            const QByteArray data = file.readAll();
-            const QVector<QByteArray> lines = data.split('\n');
+        // new file?
+        if (m_lastLineCount > lines.size())
+            m_lastLineCount = 0;
 
-            // new file?
-            if (m_lastLineCount > lines.size())
-                m_lastLineCount = 0;
-
-            for (int i = m_lastLineCount; i < lines.size(); ++i) {
-                if (lines[i].startsWith("{")) {
-                    parseJson(lines[i]);
-                }
-                for (const QByteArray &prefix : PREFIXES) {
-                    if (lines[i].startsWith(prefix)) {
-                        parseJson(lines[i].mid(prefix.size()));
-                    }
+        for (int i = m_lastLineCount; i < lines.size(); ++i) {
+            if (lines[i].startsWith("{")) {
+                parseJson(lines[i]);
+            }
+            for (const QByteArray &prefix : PREFIXES) {
+                if (lines[i].startsWith(prefix)) {
+                    parseJson(lines[i].mid(prefix.size()));
                 }
             }
-            m_lastLineCount = lines.size();
         }
+        m_lastLineCount = lines.size() - 1; // maybe last line wasn't complete
     }
 }
