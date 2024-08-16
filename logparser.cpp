@@ -44,8 +44,11 @@ static QVector<int> parseInts(const QJsonArray &array) {
     QVector<int> ret;
     for (const QJsonValue &value : array) {
         const int i = value.toInt();
+        const int s = value.toString().toInt();
         if (i > 0)
             ret << i;
+        else if (s > 0)
+            ret << s;
     }
     return ret;
 }
