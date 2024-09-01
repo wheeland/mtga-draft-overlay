@@ -115,7 +115,7 @@ bool SeventeenLandsDatabase::addCardData(const QByteArray &json)
         const QJsonObject cardObj = cardJson.toObject();
         const float avgSeen = cardObj["avg_seen"].toDouble();
         const float avgPick = cardObj["avg_pick"].toDouble();
-        const float winRate = cardObj["win_rate"].toDouble();
+        const float winRate = cardObj["ever_drawn_win_rate"].toDouble();
         const int id = cardObj["mtga_id"].toInt();
 
         const QString url = cardObj["url"].toString();

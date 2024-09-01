@@ -77,7 +77,7 @@ Item {
                     x:  _layout.cardArtCenter(model.index).x - width / 2 + _layout.dummy
                     y:  _layout.cardArtCenter(model.index).y - height/ 2 + _layout.dummy
                     width: 120
-                    height: 80
+                    height: 100
 
                     Rectangle {
                         anchors.fill: parent
@@ -99,6 +99,12 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "ALSA: " + model.avgSeen.toFixed(1)
                             color: _layout.draftValueColor((model.avgSeen - 1) / 9.0)
+                            font.pixelSize: 14
+                        }
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "GIH WR: " + (100 * model.winRate).toFixed(1)
+                            color: _layout.draftValueColor((0.62 - model.winRate) * 10)
                             font.pixelSize: 14
                         }
                         Text {
