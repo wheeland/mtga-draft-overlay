@@ -137,12 +137,5 @@ void DraftModel::onDraftPack(int pack, int pick, QVector<int> cards)
 {
     m_requestedCards = cards;
     const bool available = m_cardDB->request(cards);
-
-    if (available) {
-        updateOverlay();
-    } else {
-        beginResetModel();
-        m_currCards.clear();
-        endResetModel();
-    }
+    updateOverlay();
 }
