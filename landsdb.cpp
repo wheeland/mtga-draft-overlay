@@ -84,9 +84,11 @@ void SeventeenLandsDatabase::addSet(const QByteArray &setName)
 
 void SeventeenLandsDatabase::startDownload(const QByteArray &set)
 {
-    QByteArray url = "https://www.17lands.com/card_ratings/data?expansion={SET}&format={FMT}";
-    url.replace("{SET}", set);
-    url.replace("{FMT}", DRAFT_TYPES[0]);
+    QByteArray url = "https://www.17lands.com/card_ratings/data?expansion={SET}&format={FMT}&start_date={START}&end_date={END}";
+    url.replace("{SET}", set.toUpper());
+    url.replace("{FMT}", DRAFT_TYPES[1]);
+    url.replace("{START}", "2023-01-01");
+    url.replace("{END}", "2026-01-01");
 
     QNetworkReply *reply = m_network.get(QNetworkRequest(QUrl(url)));
     m_currentRequests[reply] = set;
