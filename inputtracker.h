@@ -8,6 +8,7 @@ class InputTracker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool alt MEMBER m_alt NOTIFY modifiersChanged)
+    Q_PROPERTY(bool ctrl MEMBER m_ctrl NOTIFY modifiersChanged)
 
 public:
     InputTracker(QObject *parent = nullptr);
@@ -27,4 +28,5 @@ private:
     bool m_middle;
     bool m_right;
     bool m_alt;
+    bool m_ctrl;
 };

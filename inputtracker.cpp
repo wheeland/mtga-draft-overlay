@@ -21,6 +21,7 @@ InputTracker::InputTracker(QObject *parent)
     , m_middle(isPressed(VK_MBUTTON))
     , m_right(isPressed(VK_RBUTTON))
     , m_alt(isPressed(VK_MENU))
+    , m_ctrl(isPressed(VK_CONTROL))
 {
     m_timer->setInterval(1);
     connect(m_timer, &QTimer::timeout, this, &InputTracker::onTimeout);
@@ -34,6 +35,7 @@ void InputTracker::onTimeout()
     const bool middle = isPressed(VK_MBUTTON);
     const bool right = isPressed(VK_RBUTTON);
     const bool alt = isPressed(VK_MENU);
+    const bool ctrl = isPressed(VK_CONTROL);
 
     Qt::MouseButtons buttons = Qt::NoButton;
     buttons |= left ? Qt::LeftButton : Qt::NoButton;
@@ -69,13 +71,14 @@ void InputTracker::onTimeout()
         }
     }
 
-    const bool changed = (alt != m_alt);
+    const bool changed = (alt != m_alt) || (ctrl != m_ctrl);
 
     m_pos = pos;
     m_left = left;
     m_middle = middle;
     m_right = right;
     m_alt = alt;
+    m_ctrl = ctrl;
 
     if (changed) {
         emit modifiersChanged();
