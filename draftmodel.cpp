@@ -88,6 +88,14 @@ void DraftModel::updateOverlay()
         const ScryfallCardData a = m_cardDB->scryfallDB().get(idA);
         const ScryfallCardData b = m_cardDB->scryfallDB().get(idB);
 
+        // no info? -> goes last
+        SeventeenLandsCardStats statsA = m_cardDB->seventeenLandsDB().stats(idA);
+        SeventeenLandsCardStats statsB = m_cardDB->seventeenLandsDB().stats(idB);
+        if (a.name.isEmpty() != b.name.isEmpty())
+            return b.name.isEmpty();
+        if (!statsA != !statsB)
+            return !statsB;
+
         // more rare = more first
         if (a.rarity != b.rarity)
             return a.rarity > b.rarity;
