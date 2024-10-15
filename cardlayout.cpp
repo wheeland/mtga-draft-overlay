@@ -26,14 +26,16 @@ void CardLayout::setSize(QSize size)
     emit update();
 }
 
-QPoint CardLayout::cardArtCenter(int index)
+QRect CardLayout::cardArtRect(int index)
 {
     const Layout layout = Layout::layout(m_size);
 
     const int x = layout.topLeft.x() + layout.cardOfs.x() * (index % 8);
     const int y = layout.topLeft.y() + layout.cardOfs.y() * (index / 8);
+    const int w = 120;
+    const int h = 120;
 
-    return QPoint(x, y);
+    return QRect(x - w/2, y - h/2, w, h);
 }
 
 QColor CardLayout::draftValueColor(float relValue)

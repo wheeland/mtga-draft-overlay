@@ -74,10 +74,10 @@ Item {
             delegate: Component {
                 Item {
                     visible: root.showDraftInfo
-                    x:  _layout.cardArtCenter(model.index).x - width / 2 + _layout.dummy
-                    y:  _layout.cardArtCenter(model.index).y - height/ 2 + _layout.dummy
-                    width: 120
-                    height: 100
+                    x:  _layout.cardArtRect(model.index).x + _layout.dummy
+                    y:  _layout.cardArtRect(model.index).y + _layout.dummy
+                    width: _layout.cardArtRect(model.index).width + _layout.dummy
+                    height: _layout.cardArtRect(model.index).height + _layout.dummy
 
                     Rectangle {
                         anchors.fill: parent
