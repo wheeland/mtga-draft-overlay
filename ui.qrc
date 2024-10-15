@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>ui/root.qml</file>
+        <file>ui/ColorBlob.qml</file>
+        <file>ui/ColorBlobs.qml</file>
     </qresource>
 </RCC>
