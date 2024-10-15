@@ -9,7 +9,7 @@ struct Layout {
         if (resolution == QSize(1920, 1080)) {
             return { {398, 240}, {160, 200} };
         } else if (resolution == QSize(2560, 1440)) {
-            return { {520, 310}, {214, 274}};
+            return { {530, 340}, {214, 274}};
         }
         else {
             qFatal("unsupported resolution");
