@@ -63,7 +63,7 @@ bool SeventeenLandsDatabase::loadSetData(const QByteArray &set, Card::Colors col
     QFile file = setCacheFile(set, colors);
     if (file.open(QFile::ReadOnly)) {
         const QByteArray data = file.readAll();
-        if (addCardData(data)) {
+        if (addCardData(data, colors)) {
             qDebug() << "Loaded set data from" << file.fileName();
             return true;
         } else {
@@ -119,11 +119,11 @@ void SeventeenLandsDatabase::onRequestFinished(QNetworkReply *reply)
     const QByteArray data = reply->readAll();
     const QPair<QByteArray, Card::Colors> set = m_currentRequests.take(reply);
 
-    addCardData(data);
+    addCardData(data, set.second);
     saveSetData(set.first, set.second, data);
 }
 
-bool SeventeenLandsDatabase::addCardData(const QByteArray &json)
+bool SeventeenLandsDatabase::addCardData(const QByteArray &json, Card::Colors colors)
 {
     const QJsonArray array = QJsonDocument::fromJson(json).array();
 
@@ -133,6 +133,7 @@ bool SeventeenLandsDatabase::addCardData(const QByteArray &json)
         const float avgPick = cardObj["avg_pick"].toDouble();
         const float winRate = cardObj["ever_drawn_win_rate"].toDouble();
         const int id = cardObj["mtga_id"].toInt();
+        const int gameCount = cardObj["game_count"].toInt();
 
         const QString url = cardObj["url"].toString();
         const int lastSlash = url.lastIndexOf('/');
@@ -140,7 +141,20 @@ bool SeventeenLandsDatabase::addCardData(const QByteArray &json)
         const QByteArray scryfallId = url.mid(lastSlash + 1, lastDot - lastSlash - 1).toLocal8Bit();
 
         if (id > 0) {
-            m_cards[id] = SeventeenLandsCardStats { scryfallId, id, avgSeen, avgPick, winRate };
+            m_cards[id].id = id;
+            if (!scryfallId.isEmpty())
+                m_cards[id].scryfallId = scryfallId;
+
+            if (colors) {
+                m_cards[id].colorWinRate << SeventeenLandsCardStats::ColorWinRate{colors, winRate, gameCount};
+                std::sort(m_cards[id].colorWinRate.begin(), m_cards[id].colorWinRate.end(), [](auto a, auto b) {
+                    return a.gameCount > b.gameCount;
+                });
+            } else {
+                m_cards[id].avgSeen = avgSeen;
+                m_cards[id].avgPick = avgPick;
+                m_cards[id].winRate = winRate;
+            }
         }
     }
 
