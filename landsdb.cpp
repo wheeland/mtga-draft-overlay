@@ -33,19 +33,23 @@ SeventeenLandsCardStats SeventeenLandsDatabase::stats(int card) const
     return m_cards[card];
 }
 
-static QFile setCacheFile(const QByteArray &set)
+static QFile setCacheFile(const QByteArray &set, Card::Colors colors)
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     dir += QDir::separator();
     dir += "17lands-data";
 
+    QString colorString = Card::colorString(colors);
+    if (!colorString.isEmpty())
+        colorString = "_" + colorString;
+
     QDir().mkpath(dir);
-    return QFile(dir + QDir::separator() + set + ".json");
+    return QFile(dir + QDir::separator() + set + colorString + ".json");
 }
 
-void SeventeenLandsDatabase::saveSetData(const QByteArray &set, const QByteArray &data)
+void SeventeenLandsDatabase::saveSetData(const QByteArray &set, Card::Colors colors, const QByteArray &data)
 {
-    QFile file = setCacheFile(set);
+    QFile file = setCacheFile(set, colors);
     if (file.open(QFile::WriteOnly)) {
         file.write(data);
         qDebug() << "Saved set data to" << file.fileName();
@@ -54,9 +58,9 @@ void SeventeenLandsDatabase::saveSetData(const QByteArray &set, const QByteArray
     }
 }
 
-bool SeventeenLandsDatabase::loadSetData(const QByteArray &set)
+bool SeventeenLandsDatabase::loadSetData(const QByteArray &set, Card::Colors colors)
 {
-    QFile file = setCacheFile(set);
+    QFile file = setCacheFile(set, colors);
     if (file.open(QFile::ReadOnly)) {
         const QByteArray data = file.readAll();
         if (addCardData(data)) {
@@ -76,13 +80,16 @@ void SeventeenLandsDatabase::addSet(const QByteArray &setName)
 
     m_sets << setName;
 
-    if (loadSetData(setName))
-        return;
-
-    startDownload(setName);
+    QVector<Card::Colors> colors = Card::dualColors();
+    colors << Card::Colors();
+    for (Card::Colors c : colors) {
+        if (!loadSetData(setName, c)) {
+            startDownload(setName, c);
+        }
+    }
 }
 
-void SeventeenLandsDatabase::startDownload(const QByteArray &set)
+void SeventeenLandsDatabase::startDownload(const QByteArray &set, Card::Colors colors)
 {
     QByteArray url = "https://www.17lands.com/card_ratings/data?expansion={SET}&format={FMT}&start_date={START}&end_date={END}";
     url.replace("{SET}", set.toUpper());
@@ -90,23 +97,30 @@ void SeventeenLandsDatabase::startDownload(const QByteArray &set)
     url.replace("{START}", "2023-01-01");
     url.replace("{END}", "2026-01-01");
 
+    if (colors) {
+        url += "&colors=" + Card::colorString(colors);
+    }
+
     QNetworkReply *reply = m_network.get(QNetworkRequest(QUrl(url)));
-    m_currentRequests[reply] = set;
+    m_currentRequests[reply] = qMakePair(set, colors);
 }
 
 void SeventeenLandsDatabase::clearCache()
 {
-    for (const QByteArray &set : m_sets)
-        startDownload(set);
+    QVector<QByteArray> sets = m_sets;
+    m_sets.clear();
+    for (QByteArray set : sets) {
+        addSet(set);
+    }
 }
 
 void SeventeenLandsDatabase::onRequestFinished(QNetworkReply *reply)
 {
     const QByteArray data = reply->readAll();
-    const QByteArray set = m_currentRequests.take(reply);
+    const QPair<QByteArray, Card::Colors> set = m_currentRequests.take(reply);
 
     addCardData(data);
-    saveSetData(set, data);
+    saveSetData(set.first, set.second, data);
 }
 
 bool SeventeenLandsDatabase::addCardData(const QByteArray &json)

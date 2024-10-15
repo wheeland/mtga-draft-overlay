@@ -19,7 +19,10 @@ public:
     Q_DECLARE_FLAGS(Colors, Color)
     Q_FLAG(Color)
 
+    static QVector<Colors> monoColors();
+    static QVector<Colors> dualColors();
     static int colorCount(Colors colors);
+    static QByteArray colorString(Colors colors);
 
     enum Rarity
     {

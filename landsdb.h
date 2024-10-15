@@ -4,6 +4,8 @@
 #include <QNetworkAccessManager>
 #include <QObject>
 
+#include "carddata.h"
+
 struct SeventeenLandsCardStats
 {
     QByteArray scryfallId;
@@ -11,6 +13,7 @@ struct SeventeenLandsCardStats
     float avgSeen = 0.f;
     float avgPick = 0.f;
     float winRate = 0.f;
+    QVector<QPair<Card::Colors, float>> colorWinRate;
 
     bool valid() const { return id >= 0; }
     operator bool() const { return valid(); }
@@ -37,13 +40,13 @@ private slots:
     void onRequestFinished(QNetworkReply *reply);
 
 private:
-    static void saveSetData(const QByteArray &set, const QByteArray &data);
-    bool loadSetData(const QByteArray &set);
-    void startDownload(const QByteArray &set);
+    static void saveSetData(const QByteArray &set, Card::Colors colors, const QByteArray &data);
+    bool loadSetData(const QByteArray &set, Card::Colors colors);
+    void startDownload(const QByteArray &set, Card::Colors colors);
     bool addCardData(const QByteArray &json);
 
     QNetworkAccessManager m_network;
-    QHash<QNetworkReply*, QByteArray> m_currentRequests;
+    QHash<QNetworkReply*, QPair<QByteArray, Card::Colors>> m_currentRequests;
     QHash<int, SeventeenLandsCardStats> m_cards;
     QVector<QByteArray> m_sets;
 };
