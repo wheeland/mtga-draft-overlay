@@ -17,6 +17,8 @@ enum Roles {
     ROLE_AVG_SEEN,
     ROLE_AVG_PICK,
     ROLE_WIN_RATE,
+    ROLE_COLORS,
+    ROLE_COLOR_WIN_RATES,
 };
 
 QModelIndex DraftModel::index(int row, int column, const QModelIndex &parent) const
@@ -56,6 +58,20 @@ QVariant DraftModel::data(const QModelIndex &index, int role) const
         case ROLE_AVG_SEEN: return stats.avgSeen;
         case ROLE_AVG_PICK: return stats.avgPick;
         case ROLE_WIN_RATE: return stats.winRate;
+        case ROLE_COLORS: {
+            QVariantList result;
+            for (auto i = 0; i < qMin(stats.colorWinRate.size(), 4); ++i) {
+                result << QVariant(stats.colorWinRate[i].colors);
+            }
+            return result;
+        }
+        case ROLE_COLOR_WIN_RATES: {
+            QVariantList result;
+            for (auto i = 0; i < qMin(stats.colorWinRate.size(), 4); ++i) {
+                result << QVariant(stats.colorWinRate[i].winRate);
+            }
+            return result;
+        }
         }
     }
     return QVariant();
@@ -71,6 +87,8 @@ QHash<int, QByteArray> DraftModel::roleNames() const
     result[ROLE_AVG_SEEN] = "avgSeen";
     result[ROLE_AVG_PICK] = "avgPick";
     result[ROLE_WIN_RATE] = "winRate";
+    result[ROLE_COLORS] = "colors";
+    result[ROLE_COLOR_WIN_RATES] = "colorWinRates";
     return result;
 }
 
