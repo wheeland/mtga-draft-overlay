@@ -73,11 +73,15 @@ Item {
             model: _draftModel
             delegate: Component {
                 Item {
+                    id: item
+
                     visible: root.showDraftInfo
                     x:  _layout.cardArtRect(model.index).x + _layout.dummy
                     y:  _layout.cardArtRect(model.index).y + _layout.dummy
                     width: _layout.cardArtRect(model.index).width + _layout.dummy
                     height: _layout.cardArtRect(model.index).height + _layout.dummy
+                    readonly property var colors: model.colors
+                    readonly property var colorWinRates: model.colorWinRates
 
                     Rectangle {
                         anchors.fill: parent
@@ -89,6 +93,12 @@ Item {
                         anchors.fill: parent
                         padding: 3
                         spacing: 3
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: model.name
+                            color: model.color
+                            font.pixelSize: 14
+                        }
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "Pick: " + model.avgPick.toFixed(1)
@@ -107,11 +117,26 @@ Item {
                             color: _layout.draftValueColor((0.62 - model.winRate) * 10)
                             font.pixelSize: 14
                         }
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: model.name
-                            color: model.color
-                            font.pixelSize: 14
+                        Row {
+                            Column {
+                                width: childrenRect.width + 20
+                                Repeater {
+                                    model: item.colors
+                                    delegate: ColorBlobs {
+                                        colors: modelData
+                                    }
+                                }
+                            }
+                            Column {
+                                width: childrenRect.width
+                                Repeater {
+                                    model: item.colorWinRates
+                                    delegate: Text {
+                                        text: (100 * modelData).toFixed(1)
+                                        color: _layout.draftValueColor((0.62 - modelData) * 10)
+                                    }
+                                }
+                            }
                         }
                     }
                 }

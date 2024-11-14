@@ -32,8 +32,8 @@ QRect CardLayout::cardArtRect(int index)
 
     const int x = layout.topLeft.x() + layout.cardOfs.x() * (index % 8);
     const int y = layout.topLeft.y() + layout.cardOfs.y() * (index / 8);
-    const int w = 120;
-    const int h = 120;
+    const int w = 140;
+    const int h = 200;
 
     return QRect(x - w/2, y - h/2, w, h);
 }
